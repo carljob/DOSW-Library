@@ -1,4 +1,16 @@
 package edu.eci.dosw.DOSW_Library.core.validator;
 
-public class UserValidator {
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.core.util.ValidationUtil;
+
+public final class UserValidator {
+    private UserValidator() {
+    }
+
+    public static void validate(User user) {
+        ValidationUtil.requireNotNull(user, "User cannot be null");
+        ValidationUtil.requireNotBlank(user.getName(), "User name is required");
+        ValidationUtil.requireNotBlank(user.getEmail(), "User email is required");
+        ValidationUtil.requireNotNull(user.getUserType(), "User type is required");
+    }
 }
