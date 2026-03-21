@@ -1,13 +1,13 @@
 package edu.eci.dosw.DOSW_Library.core.strategy;
 
-import edu.eci.dosw.DOSW_Library.core.model.UserType;
+import edu.eci.dosw.DOSW_Library.core.model.Role;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StandardLoanPolicyStrategy implements LoanPolicyStrategy {
     @Override
-    public UserType supportsUserType() {
-        return UserType.STANDARD;
+    public Role supportsRole() {
+        return Role.USER;
     }
 
     @Override
@@ -20,4 +20,3 @@ public class StandardLoanPolicyStrategy implements LoanPolicyStrategy {
         return 7;
     }
 }
-

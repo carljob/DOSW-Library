@@ -1,26 +1,44 @@
 package edu.eci.dosw.DOSW_Library.core.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "loans")
 public class Loan {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
-    private Long bookId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_id")
+    private Book book;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     private LocalDate loanDate;
-    private LocalDate dueDate;
-    private LocalDate returnedDate;
+    private LocalDate returnDate;
     private boolean returned;
 
     public Loan() {
     }
 
-    public Loan(Long id, Long userId, Long bookId, LocalDate loanDate, LocalDate dueDate, LocalDate returnedDate, boolean returned) {
+    public Loan(Long id, Book book, User user, LocalDate loanDate, LocalDate returnDate, boolean returned) {
         this.id = id;
-        this.userId = userId;
-        this.bookId = bookId;
+        this.book = book;
+        this.user = user;
         this.loanDate = loanDate;
-        this.dueDate = dueDate;
-        this.returnedDate = returnedDate;
+        this.returnDate = returnDate;
         this.returned = returned;
     }
 
@@ -32,20 +50,20 @@ public class Loan {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Book getBook() {
+        return book;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setBook(Book book) {
+        this.book = book;
     }
 
-    public Long getBookId() {
-        return bookId;
+    public User getUser() {
+        return user;
     }
 
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public LocalDate getLoanDate() {
@@ -56,20 +74,12 @@ public class Loan {
         this.loanDate = loanDate;
     }
 
-    public LocalDate getDueDate() {
-        return dueDate;
+    public LocalDate getReturnDate() {
+        return returnDate;
     }
 
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public LocalDate getReturnedDate() {
-        return returnedDate;
-    }
-
-    public void setReturnedDate(LocalDate returnedDate) {
-        this.returnedDate = returnedDate;
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
     }
 
     public boolean isReturned() {

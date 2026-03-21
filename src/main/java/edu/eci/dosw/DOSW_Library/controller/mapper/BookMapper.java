@@ -1,31 +1,20 @@
 package edu.eci.dosw.DOSW_Library.controller.mapper;
 
-import edu.eci.dosw.DOSW_Library.controller.dto.BookDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.BookRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.BookResponseDTO;
 import edu.eci.dosw.DOSW_Library.core.model.Book;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-public final class BookMapper {
-    private BookMapper() {
-    }
+@Mapper(componentModel = "spring")
+public interface BookMapper {
 
-    public static Book toModel(BookDTO dto) {
-        return new Book(
-                dto.getId(),
-                dto.getTitle(),
-                dto.getAuthor(),
-                dto.getIsbn(),
-                dto.getTotalCopies(),
-                dto.getAvailableCopies()
-        );
-    }
+    @Mapping(target = "id", ignore = true)
+    Book toEntity(BookRequestDTO dto);
 
-    public static BookDTO toDto(Book book) {
-        return new BookDTO(
-                book.getId(),
-                book.getTitle(),
-                book.getAuthor(),
-                book.getIsbn(),
-                book.getTotalCopies(),
-                book.getAvailableCopies()
-        );
-    }
+    BookResponseDTO toResponse(Book book);
+
+    @Mapping(target = "id", ignore = true)
+    void updateEntity(BookRequestDTO dto, @MappingTarget Book book);
 }

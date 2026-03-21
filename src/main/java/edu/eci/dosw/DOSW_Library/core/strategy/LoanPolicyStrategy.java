@@ -1,12 +1,11 @@
 package edu.eci.dosw.DOSW_Library.core.strategy;
 
-import edu.eci.dosw.DOSW_Library.core.model.UserType;
+import edu.eci.dosw.DOSW_Library.core.model.Role;
 
 public interface LoanPolicyStrategy {
-    UserType supportsUserType();
+    Role supportsRole();
 
     int maxConcurrentLoans();
 
     int loanDays();
 }
-

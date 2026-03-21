@@ -1,20 +1,13 @@
 package edu.eci.dosw.DOSW_Library.controller.dto;
 
-public class UserDTO {
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+
+public class UserResponseDTO {
     private Long id;
     private String name;
     private String email;
-    private String userType;
-
-    public UserDTO() {
-    }
-
-    public UserDTO(Long id, String name, String email, String userType) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.userType = userType;
-    }
+    private String username;
+    private Role role;
 
     public Long getId() {
         return id;
@@ -40,11 +33,20 @@ public class UserDTO {
         this.email = email;
     }
 
-    public String getUserType() {
-        return userType;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserType(String userType) {
-        this.userType = userType;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }
+

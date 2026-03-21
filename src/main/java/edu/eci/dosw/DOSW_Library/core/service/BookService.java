@@ -1,71 +1,81 @@
 package edu.eci.dosw.DOSW_Library.core.service;
 
-import edu.eci.dosw.DOSW_Library.core.exception.BookNotAvaliableException;
-import edu.eci.dosw.DOSW_Library.core.exception.ResourceNotFoundException;
+import edu.eci.dosw.DOSW_Library.core.exception.BookNotAvailableException;
+import edu.eci.dosw.DOSW_Library.core.exception.BookNotFoundException;
 import edu.eci.dosw.DOSW_Library.core.model.Book;
-import edu.eci.dosw.DOSW_Library.core.util.IdGeneratorUtil;
 import edu.eci.dosw.DOSW_Library.core.validator.BookValidator;
-import java.util.ArrayList;
+import edu.eci.dosw.DOSW_Library.repository.BookRepository;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class BookService {
-    private final Map<Long, Book> books = new ConcurrentHashMap<>();
-    private final IdGeneratorUtil idGenerator = new IdGeneratorUtil();
+
+    private final BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
 
     public List<Book> getAllBooks() {
-        return new ArrayList<>(books.values());
+        return bookRepository.findAll();
     }
 
     public Book getBookById(Long id) {
-        Book book = books.get(id);
-        if (book == null) {
-            throw new ResourceNotFoundException("Book not found with id: " + id);
-        }
-        return book;
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
     }
 
+    @Transactional
     public Book createBook(Book book) {
-        if (book.getAvailableCopies() == 0) {
-            book.setAvailableCopies(book.getTotalCopies());
+        if (book.getAvailableStock() == 0) {
+            book.setAvailableStock(book.getTotalStock());
         }
         BookValidator.validate(book);
-        Long id = idGenerator.nextId();
-        book.setId(id);
-        books.put(id, book);
-        return book;
+        return bookRepository.save(book);
     }
 
+    @Transactional
     public Book updateBook(Long id, Book updatedBook) {
-        BookValidator.validate(updatedBook);
-        getBookById(id);
-        updatedBook.setId(id);
-        books.put(id, updatedBook);
-        return updatedBook;
-    }
+        Book existing = getBookById(id);
+        existing.setTitle(updatedBook.getTitle());
+        existing.setAuthor(updatedBook.getAuthor());
+        existing.setIsbn(updatedBook.getIsbn());
+        existing.setTotalStock(updatedBook.getTotalStock());
 
-    public void deleteBook(Long id) {
-        Book removed = books.remove(id);
-        if (removed == null) {
-            throw new ResourceNotFoundException("Book not found with id: " + id);
+        if (updatedBook.getAvailableStock() > updatedBook.getTotalStock()) {
+            existing.setAvailableStock(updatedBook.getTotalStock());
+        } else {
+            existing.setAvailableStock(updatedBook.getAvailableStock());
         }
+
+        BookValidator.validate(existing);
+        return bookRepository.save(existing);
     }
 
+    @Transactional
+    public void deleteBook(Long id) {
+        Book existing = getBookById(id);
+        bookRepository.delete(existing);
+    }
+
+    @Transactional
     public void decrementAvailableCopies(Long id) {
         Book book = getBookById(id);
-        if (book.getAvailableCopies() <= 0) {
-            throw new BookNotAvaliableException("Book has no available copies: " + id);
+        if (book.getAvailableStock() <= 0) {
+            throw new BookNotAvailableException("Book has no available stock: " + id);
         }
-        book.setAvailableCopies(book.getAvailableCopies() - 1);
+        book.setAvailableStock(book.getAvailableStock() - 1);
+        bookRepository.save(book);
     }
 
+    @Transactional
     public void incrementAvailableCopies(Long id) {
         Book book = getBookById(id);
-        if (book.getAvailableCopies() < book.getTotalCopies()) {
-            book.setAvailableCopies(book.getAvailableCopies() + 1);
+        if (book.getAvailableStock() < book.getTotalStock()) {
+            book.setAvailableStock(book.getAvailableStock() + 1);
         }
+        bookRepository.save(book);
     }
 }

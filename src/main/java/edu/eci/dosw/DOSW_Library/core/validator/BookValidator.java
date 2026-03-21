@@ -12,11 +12,11 @@ public final class BookValidator {
         ValidationUtil.requireNotBlank(book.getTitle(), "Book title is required");
         ValidationUtil.requireNotBlank(book.getAuthor(), "Book author is required");
         ValidationUtil.requireNotBlank(book.getIsbn(), "Book ISBN is required");
-        ValidationUtil.requirePositive(book.getTotalCopies(), "Total copies must be greater than zero");
-        ValidationUtil.requireZeroOrPositive(book.getAvailableCopies(), "Available copies cannot be negative");
+        ValidationUtil.requirePositive(book.getTotalStock(), "Total stock must be greater than zero");
+        ValidationUtil.requireZeroOrPositive(book.getAvailableStock(), "Available stock cannot be negative");
 
-        if (book.getAvailableCopies() > book.getTotalCopies()) {
-            throw new IllegalArgumentException("Available copies cannot exceed total copies");
+        if (book.getAvailableStock() > book.getTotalStock()) {
+            throw new IllegalArgumentException("Available stock cannot exceed total stock");
         }
     }
 }

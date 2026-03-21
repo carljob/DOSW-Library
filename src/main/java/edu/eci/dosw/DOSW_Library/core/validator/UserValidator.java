@@ -11,6 +11,8 @@ public final class UserValidator {
         ValidationUtil.requireNotNull(user, "User cannot be null");
         ValidationUtil.requireNotBlank(user.getName(), "User name is required");
         ValidationUtil.requireNotBlank(user.getEmail(), "User email is required");
-        ValidationUtil.requireNotNull(user.getUserType(), "User type is required");
+        ValidationUtil.requireNotBlank(user.getUsername(), "Username is required");
+        ValidationUtil.requireNotBlank(user.getPassword(), "Password is required");
+        ValidationUtil.requireNotNull(user.getRole(), "Role is required");
     }
 }

@@ -1,0 +1,2351 @@
+
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\AuthController.java
+package edu.eci.dosw.DOSW_Library.controller;
+import edu.eci.dosw.DOSW_Library.controller.dto.AuthRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.AuthResponseDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.UserRequestDTO;
+import edu.eci.dosw.DOSW_Library.core.service.AuthService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+    private final AuthService authService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AuthResponseDTO register(@Valid @RequestBody UserRequestDTO request) {
+        return authService.register(request);
+    }
+    @PostMapping("/login")
+    public AuthResponseDTO login(@Valid @RequestBody AuthRequestDTO request) {
+        return authService.login(request);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\BookController.java
+package edu.eci.dosw.DOSW_Library.controller;
+
+import edu.eci.dosw.DOSW_Library.controller.dto.BookRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.BookResponseDTO;
+import edu.eci.dosw.DOSW_Library.controller.mapper.BookMapper;
+import edu.eci.dosw.DOSW_Library.core.model.Book;
+import edu.eci.dosw.DOSW_Library.core.service.BookService;
+import jakarta.validation.Valid;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/books")
+public class BookController {
+    private final BookService bookService;
+    private final BookMapper bookMapper;
+
+    public BookController(BookService bookService, BookMapper bookMapper) {
+        this.bookService = bookService;
+        this.bookMapper = bookMapper;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('USER','LIBRARIAN')")
+    public List<BookResponseDTO> getAllBooks() {
+        return bookService.getAllBooks().stream().map(bookMapper::toResponse).toList();
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER','LIBRARIAN')")
+    public BookResponseDTO getBookById(@PathVariable Long id) {
+        return bookMapper.toResponse(bookService.getBookById(id));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    public BookResponseDTO createBook(@Valid @RequestBody BookRequestDTO request) {
+        Book createdBook = bookService.createBook(bookMapper.toEntity(request));
+        return bookMapper.toResponse(createdBook);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    public BookResponseDTO updateBook(@PathVariable Long id, @Valid @RequestBody BookRequestDTO request) {
+        Book updatedBook = bookService.updateBook(id, bookMapper.toEntity(request));
+        return bookMapper.toResponse(updatedBook);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\AuthRequestDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+import jakarta.validation.constraints.NotBlank;
+
+public class AuthRequestDTO {
+    @NotBlank
+    private String username;
+
+    @NotBlank
+    private String password;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\AuthResponseDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+public class AuthResponseDTO {
+    private String token;
+    public AuthResponseDTO() {
+    }
+    public AuthResponseDTO(String token) {
+        this.token = token;
+    }
+    public String getToken() {
+        return token;
+    }
+    public void setToken(String token) {
+        this.token = token;
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\BookDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+public class BookDTO {
+    private Long id;
+    private String title;
+    private String author;
+    private String isbn;
+    private int totalCopies;
+    private int availableCopies;
+
+    public BookDTO() {
+    }
+
+    public BookDTO(Long id, String title, String author, String isbn, int totalCopies, int availableCopies) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.totalCopies = totalCopies;
+        this.availableCopies = availableCopies;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    public int getTotalCopies() {
+        return totalCopies;
+    }
+
+    public void setTotalCopies(int totalCopies) {
+        this.totalCopies = totalCopies;
+    }
+
+    public int getAvailableCopies() {
+        return availableCopies;
+    }
+
+    public void setAvailableCopies(int availableCopies) {
+        this.availableCopies = availableCopies;
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\BookRequestDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+
+public class BookRequestDTO {
+    @NotBlank
+    private String title;
+
+    @NotBlank
+    private String author;
+
+    @NotBlank
+    private String isbn;
+
+    @Min(1)
+    private int totalStock;
+
+    @Min(0)
+    private int availableStock;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    public int getTotalStock() {
+        return totalStock;
+    }
+
+    public void setTotalStock(int totalStock) {
+        this.totalStock = totalStock;
+    }
+
+    public int getAvailableStock() {
+        return availableStock;
+    }
+
+    public void setAvailableStock(int availableStock) {
+        this.availableStock = availableStock;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\BookResponseDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+public class BookResponseDTO {
+    private Long id;
+    private String title;
+    private String author;
+    private String isbn;
+    private int totalStock;
+    private int availableStock;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    public int getTotalStock() {
+        return totalStock;
+    }
+
+    public void setTotalStock(int totalStock) {
+        this.totalStock = totalStock;
+    }
+
+    public int getAvailableStock() {
+        return availableStock;
+    }
+
+    public void setAvailableStock(int availableStock) {
+        this.availableStock = availableStock;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\LoanDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+import java.time.LocalDate;
+
+public class LoanDTO {
+    private Long id;
+    private Long userId;
+    private Long bookId;
+    private LocalDate loanDate;
+    private LocalDate dueDate;
+    private LocalDate returnedDate;
+    private boolean returned;
+
+    public LoanDTO() {
+    }
+
+    public LoanDTO(Long id, Long userId, Long bookId, LocalDate loanDate, LocalDate dueDate, LocalDate returnedDate, boolean returned) {
+        this.id = id;
+        this.userId = userId;
+        this.bookId = bookId;
+        this.loanDate = loanDate;
+        this.dueDate = dueDate;
+        this.returnedDate = returnedDate;
+        this.returned = returned;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(Long bookId) {
+        this.bookId = bookId;
+    }
+
+    public LocalDate getLoanDate() {
+        return loanDate;
+    }
+
+    public void setLoanDate(LocalDate loanDate) {
+        this.loanDate = loanDate;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public LocalDate getReturnedDate() {
+        return returnedDate;
+    }
+
+    public void setReturnedDate(LocalDate returnedDate) {
+        this.returnedDate = returnedDate;
+    }
+
+    public boolean isReturned() {
+        return returned;
+    }
+
+    public void setReturned(boolean returned) {
+        this.returned = returned;
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\LoanRequestDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+import jakarta.validation.constraints.NotNull;
+
+public class LoanRequestDTO {
+    @NotNull
+    private Long bookId;
+
+    public Long getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(Long bookId) {
+        this.bookId = bookId;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\LoanResponseDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+import java.time.LocalDate;
+
+public class LoanResponseDTO {
+    private Long id;
+    private Long bookId;
+    private String bookTitle;
+    private Long userId;
+    private String username;
+    private LocalDate loanDate;
+    private LocalDate returnDate;
+    private boolean returned;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(Long bookId) {
+        this.bookId = bookId;
+    }
+
+    public String getBookTitle() {
+        return bookTitle;
+    }
+
+    public void setBookTitle(String bookTitle) {
+        this.bookTitle = bookTitle;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public LocalDate getLoanDate() {
+        return loanDate;
+    }
+
+    public void setLoanDate(LocalDate loanDate) {
+        this.loanDate = loanDate;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    public boolean isReturned() {
+        return returned;
+    }
+
+    public void setReturned(boolean returned) {
+        this.returned = returned;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\UserDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+public class UserDTO {
+    private Long id;
+    private String name;
+    private String email;
+    private String userType;
+
+    public UserDTO() {
+    }
+
+    public UserDTO(Long id, String name, String email, String userType) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.userType = userType;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\UserRequestDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public class UserRequestDTO {
+    @NotBlank
+    private String name;
+
+    @NotBlank
+    @Email
+    private String email;
+
+    @NotBlank
+    @Size(min = 4, max = 50)
+    private String username;
+
+    @NotBlank
+    @Size(min = 6, max = 100)
+    private String password;
+
+    private Role role;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\dto\UserResponseDTO.java
+package edu.eci.dosw.DOSW_Library.controller.dto;
+
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+
+public class UserResponseDTO {
+    private Long id;
+    private String name;
+    private String email;
+    private String username;
+    private Role role;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\GlobalExceptionHandler.java
+package edu.eci.dosw.DOSW_Library.controller;
+
+import edu.eci.dosw.DOSW_Library.core.exception.BookNotAvailableException;
+import edu.eci.dosw.DOSW_Library.core.exception.BookNotFoundException;
+import edu.eci.dosw.DOSW_Library.core.exception.ResourceNotFoundException;
+import edu.eci.dosw.DOSW_Library.core.exception.UnauthorizedOperationException;
+import edu.eci.dosw.DOSW_Library.core.exception.UserNotFoundException;
+import java.time.LocalDateTime;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler({ResourceNotFoundException.class, UserNotFoundException.class, BookNotFoundException.class})
+    public ResponseEntity<Map<String, Object>> handleNotFound(RuntimeException ex) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler({BookNotAvailableException.class})
+    public ResponseEntity<Map<String, Object>> handleConflict(RuntimeException ex) {
+        return buildError(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedOperationException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(UnauthorizedOperationException ex) {
+        return buildError(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex) {
+        return buildError(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("Validation error");
+        return buildError(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleBadRequest(IllegalArgumentException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
+        return buildError(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    private ResponseEntity<Map<String, Object>> buildError(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "status", status.value(),
+                "error", status.getReasonPhrase(),
+                "message", message
+        ));
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\LoanController.java
+package edu.eci.dosw.DOSW_Library.controller;
+
+import edu.eci.dosw.DOSW_Library.controller.dto.LoanRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.LoanResponseDTO;
+import edu.eci.dosw.DOSW_Library.controller.mapper.LoanMapper;
+import edu.eci.dosw.DOSW_Library.core.model.Loan;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.core.service.LoanService;
+import jakarta.validation.Valid;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/loans")
+public class LoanController {
+    private final LoanService loanService;
+    private final LoanMapper loanMapper;
+
+    public LoanController(LoanService loanService, LoanMapper loanMapper) {
+        this.loanService = loanService;
+        this.loanMapper = loanMapper;
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    public List<LoanResponseDTO> getAllLoans() {
+        return loanService.getAllLoans().stream().map(loanMapper::toResponse).toList();
+    }
+
+    @GetMapping("/my-loans")
+    @PreAuthorize("hasAnyRole('USER','LIBRARIAN')")
+    public List<LoanResponseDTO> getMyLoans(@AuthenticationPrincipal User user) {
+        return loanService.getLoansForUser(user.getId()).stream().map(loanMapper::toResponse).toList();
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    public LoanResponseDTO getLoanById(@PathVariable Long id) {
+        return loanMapper.toResponse(loanService.getLoanById(id));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('USER','LIBRARIAN')")
+    @ResponseStatus(HttpStatus.CREATED)
+    public LoanResponseDTO createLoan(@AuthenticationPrincipal User user, @Valid @RequestBody LoanRequestDTO request) {
+        Loan createdLoan = loanService.createLoan(user.getId(), request.getBookId());
+        return loanMapper.toResponse(createdLoan);
+    }
+
+    @PostMapping("/{id}/return")
+    @PreAuthorize("hasAnyRole('USER','LIBRARIAN')")
+    public LoanResponseDTO returnLoan(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        return loanMapper.toResponse(loanService.returnLoan(id, user.getId(), user.getRole()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteLoan(@PathVariable Long id) {
+        loanService.deleteLoan(id);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\mapper\BookMapper.java
+package edu.eci.dosw.DOSW_Library.controller.mapper;
+
+import edu.eci.dosw.DOSW_Library.controller.dto.BookRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.BookResponseDTO;
+import edu.eci.dosw.DOSW_Library.core.model.Book;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+@Mapper(componentModel = "spring")
+public interface BookMapper {
+
+    @Mapping(target = "id", ignore = true)
+    Book toEntity(BookRequestDTO dto);
+
+    BookResponseDTO toResponse(Book book);
+
+    @Mapping(target = "id", ignore = true)
+    void updateEntity(BookRequestDTO dto, @MappingTarget Book book);
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\mapper\LoanMapper.java
+package edu.eci.dosw.DOSW_Library.controller.mapper;
+
+import edu.eci.dosw.DOSW_Library.controller.dto.LoanResponseDTO;
+import edu.eci.dosw.DOSW_Library.core.model.Loan;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+@Mapper(componentModel = "spring")
+public interface LoanMapper {
+
+    @Mapping(target = "bookId", source = "book.id")
+    @Mapping(target = "bookTitle", source = "book.title")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "username", source = "user.username")
+    LoanResponseDTO toResponse(Loan loan);
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\mapper\UserMapper.java
+package edu.eci.dosw.DOSW_Library.controller.mapper;
+
+import edu.eci.dosw.DOSW_Library.controller.dto.UserRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.UserResponseDTO;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+@Mapper(componentModel = "spring")
+public interface UserMapper {
+
+    @Mapping(target = "id", ignore = true)
+    User toEntity(UserRequestDTO dto);
+
+    UserResponseDTO toResponse(User user);
+
+    @Mapping(target = "id", ignore = true)
+    void updateEntity(UserRequestDTO dto, @MappingTarget User user);
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\controller\UserController.java
+package edu.eci.dosw.DOSW_Library.controller;
+
+import edu.eci.dosw.DOSW_Library.controller.dto.UserRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.UserResponseDTO;
+import edu.eci.dosw.DOSW_Library.controller.mapper.UserMapper;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.core.service.UserService;
+import jakarta.validation.Valid;
+import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/users")
+@PreAuthorize("hasRole('LIBRARIAN')")
+public class UserController {
+    private final UserService userService;
+    private final UserMapper userMapper;
+
+    public UserController(UserService userService, UserMapper userMapper) {
+        this.userService = userService;
+        this.userMapper = userMapper;
+    }
+
+    @GetMapping
+    public List<UserResponseDTO> getAllUsers() {
+        return userService.getAllUsers().stream().map(userMapper::toResponse).toList();
+    }
+
+    @GetMapping("/{id}")
+    public UserResponseDTO getUserById(@PathVariable Long id) {
+        return userMapper.toResponse(userService.getUserById(id));
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDTO createUser(@Valid @RequestBody UserRequestDTO request) {
+        User createdUser = userService.createUser(userMapper.toEntity(request));
+        return userMapper.toResponse(createdUser);
+    }
+
+    @PutMapping("/{id}")
+    public UserResponseDTO updateUser(@PathVariable Long id, @Valid @RequestBody UserRequestDTO request) {
+        User updatedUser = userService.updateUser(id, userMapper.toEntity(request));
+        return userMapper.toResponse(updatedUser);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\exception\BookNotAvailableException.java
+package edu.eci.dosw.DOSW_Library.core.exception;
+
+public class BookNotAvailableException extends RuntimeException {
+    public BookNotAvailableException(String message) {
+        super(message);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\exception\BookNotFoundException.java
+package edu.eci.dosw.DOSW_Library.core.exception;
+
+public class BookNotFoundException extends RuntimeException {
+    public BookNotFoundException(String message) {
+        super(message);
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\exception\LoanLimitExceededException.java
+package edu.eci.dosw.DOSW_Library.core.exception;
+
+public class LoanLimitExceededException extends RuntimeException {
+    public LoanLimitExceededException(String message) {
+        super(message);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\exception\ResourceNotFoundException.java
+package edu.eci.dosw.DOSW_Library.core.exception;
+
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\exception\UnauthorizedOperationException.java
+package edu.eci.dosw.DOSW_Library.core.exception;
+
+public class UnauthorizedOperationException extends RuntimeException {
+    public UnauthorizedOperationException(String message) {
+        super(message);
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\exception\UserNotFoundException.java
+package edu.eci.dosw.DOSW_Library.core.exception;
+
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message) {
+        super(message);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\model\Book.java
+package edu.eci.dosw.DOSW_Library.core.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "books")
+public class Book {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String author;
+
+    @Column(nullable = false, unique = true)
+    private String isbn;
+
+    @Column(nullable = false)
+    private int totalStock;
+
+    @Column(nullable = false)
+    private int availableStock;
+
+    public Book() {
+    }
+
+    public Book(Long id, String title, String author, String isbn, int totalStock, int availableStock) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.totalStock = totalStock;
+        this.availableStock = availableStock;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    public int getTotalStock() {
+        return totalStock;
+    }
+
+    public void setTotalStock(int totalStock) {
+        this.totalStock = totalStock;
+    }
+
+    public int getAvailableStock() {
+        return availableStock;
+    }
+
+    public void setAvailableStock(int availableStock) {
+        this.availableStock = availableStock;
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\model\Loan.java
+package edu.eci.dosw.DOSW_Library.core.model;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "loans")
+public class Loan {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_id")
+    private Book book;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    private LocalDate loanDate;
+    private LocalDate returnDate;
+    private boolean returned;
+
+    public Loan() {
+    }
+
+    public Loan(Long id, Book book, User user, LocalDate loanDate, LocalDate returnDate, boolean returned) {
+        this.id = id;
+        this.book = book;
+        this.user = user;
+        this.loanDate = loanDate;
+        this.returnDate = returnDate;
+        this.returned = returned;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Book getBook() {
+        return book;
+    }
+
+    public void setBook(Book book) {
+        this.book = book;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public LocalDate getLoanDate() {
+        return loanDate;
+    }
+
+    public void setLoanDate(LocalDate loanDate) {
+        this.loanDate = loanDate;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
+    }
+
+    public boolean isReturned() {
+        return returned;
+    }
+
+    public void setReturned(boolean returned) {
+        this.returned = returned;
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\model\Role.java
+package edu.eci.dosw.DOSW_Library.core.model;
+
+public enum Role {
+    USER,
+    LIBRARIAN
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\model\User.java
+package edu.eci.dosw.DOSW_Library.core.model;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.util.Collection;
+import java.util.List;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+@Entity
+@Table(name = "users")
+public class User implements UserDetails {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    public User() {
+    }
+
+    public User(Long id, String name, String email, String username, String password, Role role) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\model\UserType.java
+package edu.eci.dosw.DOSW_Library.core.model;
+
+public enum UserType {
+    STANDARD,
+    PREMIUM
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\service\AuthService.java
+package edu.eci.dosw.DOSW_Library.core.service;
+
+import edu.eci.dosw.DOSW_Library.controller.dto.AuthRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.AuthResponseDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.UserRequestDTO;
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.repository.UserRepository;
+import edu.eci.dosw.DOSW_Library.security.JwtService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.stereotype.Service;
+
+@Service
+public class AuthService {
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    public AuthService(
+            AuthenticationManager authenticationManager,
+            JwtService jwtService,
+            UserService userService,
+            UserRepository userRepository
+    ) {
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+        this.userService = userService;
+        this.userRepository = userRepository;
+    }
+
+    public AuthResponseDTO register(UserRequestDTO request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setUsername(request.getUsername());
+        user.setPassword(request.getPassword());
+        user.setRole(request.getRole() == null ? Role.USER : request.getRole());
+
+        User created = userService.createUser(user);
+        return new AuthResponseDTO(jwtService.generateToken(created));
+    }
+
+    public AuthResponseDTO login(AuthRequestDTO request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+        User user = userService.findByUsername(request.getUsername());
+        return new AuthResponseDTO(jwtService.generateToken(user));
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\service\BookService.java
+package edu.eci.dosw.DOSW_Library.core.service;
+
+import edu.eci.dosw.DOSW_Library.core.exception.BookNotAvailableException;
+import edu.eci.dosw.DOSW_Library.core.exception.BookNotFoundException;
+import edu.eci.dosw.DOSW_Library.core.model.Book;
+import edu.eci.dosw.DOSW_Library.core.validator.BookValidator;
+import edu.eci.dosw.DOSW_Library.repository.BookRepository;
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class BookService {
+
+    private final BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
+
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
+    }
+
+    @Transactional
+    public Book createBook(Book book) {
+        if (book.getAvailableStock() == 0) {
+            book.setAvailableStock(book.getTotalStock());
+        }
+        BookValidator.validate(book);
+        return bookRepository.save(book);
+    }
+
+    @Transactional
+    public Book updateBook(Long id, Book updatedBook) {
+        Book existing = getBookById(id);
+        existing.setTitle(updatedBook.getTitle());
+        existing.setAuthor(updatedBook.getAuthor());
+        existing.setIsbn(updatedBook.getIsbn());
+        existing.setTotalStock(updatedBook.getTotalStock());
+
+        if (updatedBook.getAvailableStock() > updatedBook.getTotalStock()) {
+            existing.setAvailableStock(updatedBook.getTotalStock());
+        } else {
+            existing.setAvailableStock(updatedBook.getAvailableStock());
+        }
+
+        BookValidator.validate(existing);
+        return bookRepository.save(existing);
+    }
+
+    @Transactional
+    public void deleteBook(Long id) {
+        Book existing = getBookById(id);
+        bookRepository.delete(existing);
+    }
+
+    @Transactional
+    public void decrementAvailableCopies(Long id) {
+        Book book = getBookById(id);
+        if (book.getAvailableStock() <= 0) {
+            throw new BookNotAvailableException("Book has no available stock: " + id);
+        }
+        book.setAvailableStock(book.getAvailableStock() - 1);
+        bookRepository.save(book);
+    }
+
+    @Transactional
+    public void incrementAvailableCopies(Long id) {
+        Book book = getBookById(id);
+        if (book.getAvailableStock() < book.getTotalStock()) {
+            book.setAvailableStock(book.getAvailableStock() + 1);
+        }
+        bookRepository.save(book);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\service\LoanService.java
+package edu.eci.dosw.DOSW_Library.core.service;
+
+import edu.eci.dosw.DOSW_Library.core.exception.BookNotAvailableException;
+import edu.eci.dosw.DOSW_Library.core.exception.ResourceNotFoundException;
+import edu.eci.dosw.DOSW_Library.core.exception.UnauthorizedOperationException;
+import edu.eci.dosw.DOSW_Library.core.model.Book;
+import edu.eci.dosw.DOSW_Library.core.model.Loan;
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.core.util.DateUtil;
+import edu.eci.dosw.DOSW_Library.core.validator.LoanValidator;
+import edu.eci.dosw.DOSW_Library.repository.LoanRepository;
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class LoanService {
+
+    private final LoanRepository loanRepository;
+    private final UserService userService;
+    private final BookService bookService;
+
+    public LoanService(LoanRepository loanRepository, UserService userService, BookService bookService) {
+        this.loanRepository = loanRepository;
+        this.userService = userService;
+        this.bookService = bookService;
+    }
+
+    public List<Loan> getAllLoans() {
+        return loanRepository.findAll();
+    }
+
+    public Loan getLoanById(Long id) {
+        return loanRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Loan not found with id: " + id));
+    }
+
+    @Transactional
+    public Loan createLoan(Long userId, Long bookId) {
+        LoanValidator.validateForCreate(bookId);
+
+        User user = userService.getUserById(userId);
+        Book book = bookService.getBookById(bookId);
+
+        if (book.getAvailableStock() <= 0) {
+            throw new BookNotAvailableException("Book has no available stock: " + bookId);
+        }
+
+        bookService.decrementAvailableCopies(bookId);
+
+        Loan loan = new Loan();
+        loan.setBook(book);
+        loan.setUser(user);
+        loan.setLoanDate(DateUtil.today());
+        loan.setReturned(false);
+        return loanRepository.save(loan);
+    }
+
+    @Transactional
+    public Loan updateLoan(Long id, Loan update) {
+        Loan existing = getLoanById(id);
+        if (update.isReturned() && !existing.isReturned()) {
+            return returnLoan(id, update.getUser().getId(), update.getUser().getRole());
+        }
+        return existing;
+    }
+
+    @Transactional
+    public Loan returnLoan(Long loanId, Long requesterUserId, Role requesterRole) {
+        Loan loan = getLoanById(loanId);
+
+        boolean isOwner = loan.getUser().getId().equals(requesterUserId);
+        boolean isLibrarian = requesterRole == Role.LIBRARIAN;
+        if (!isOwner && !isLibrarian) {
+            throw new UnauthorizedOperationException("You cannot return loans from other users");
+        }
+
+        if (loan.isReturned()) {
+            throw new IllegalStateException("Loan is already returned");
+        }
+
+        loan.setReturned(true);
+        loan.setReturnDate(DateUtil.today());
+        bookService.incrementAvailableCopies(loan.getBook().getId());
+        return loanRepository.save(loan);
+    }
+
+    @Transactional
+    public void deleteLoan(Long id) {
+        Loan loan = getLoanById(id);
+        if (!loan.isReturned()) {
+            bookService.incrementAvailableCopies(loan.getBook().getId());
+        }
+        loanRepository.delete(loan);
+    }
+
+    public List<Loan> getLoansForUser(Long userId) {
+        return loanRepository.findByUserId(userId);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\service\UserService.java
+package edu.eci.dosw.DOSW_Library.core.service;
+
+import edu.eci.dosw.DOSW_Library.core.exception.UserNotFoundException;
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.core.validator.UserValidator;
+import edu.eci.dosw.DOSW_Library.repository.UserRepository;
+import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+    }
+
+    @Transactional
+    public User createUser(User user) {
+        if (user.getRole() == null) {
+            user.setRole(Role.USER);
+        }
+        UserValidator.validate(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public User updateUser(Long id, User updatedUser) {
+        User existing = getUserById(id);
+        existing.setName(updatedUser.getName());
+        existing.setEmail(updatedUser.getEmail());
+        existing.setUsername(updatedUser.getUsername());
+        existing.setRole(updatedUser.getRole() == null ? existing.getRole() : updatedUser.getRole());
+
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+        }
+
+        UserValidator.validate(existing);
+        return userRepository.save(existing);
+    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        User existing = getUserById(id);
+        userRepository.delete(existing);
+    }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\strategy\LoanPolicyContext.java
+package edu.eci.dosw.DOSW_Library.core.strategy;
+
+import edu.eci.dosw.DOSW_Library.core.model.UserType;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import org.springframework.stereotype.Component;
+
+@Component
+public class LoanPolicyContext {
+    private final Map<UserType, LoanPolicyStrategy> strategies;
+
+    public LoanPolicyContext(List<LoanPolicyStrategy> strategyList) {
+        this.strategies = new EnumMap<>(UserType.class);
+        for (LoanPolicyStrategy strategy : strategyList) {
+            this.strategies.put(strategy.supportsUserType(), strategy);
+        }
+    }
+
+    public LoanPolicyStrategy getPolicy(UserType userType) {
+        LoanPolicyStrategy strategy = strategies.get(userType);
+        if (strategy == null) {
+            throw new IllegalArgumentException("No strategy configured for user type: " + userType);
+        }
+        return strategy;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\strategy\LoanPolicyStrategy.java
+package edu.eci.dosw.DOSW_Library.core.strategy;
+
+import edu.eci.dosw.DOSW_Library.core.model.UserType;
+
+public interface LoanPolicyStrategy {
+    UserType supportsUserType();
+
+    int maxConcurrentLoans();
+
+    int loanDays();
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\strategy\PremiumLoanPolicyStrategy.java
+package edu.eci.dosw.DOSW_Library.core.strategy;
+
+import edu.eci.dosw.DOSW_Library.core.model.UserType;
+import org.springframework.stereotype.Component;
+
+@Component
+public class PremiumLoanPolicyStrategy implements LoanPolicyStrategy {
+    @Override
+    public UserType supportsUserType() {
+        return UserType.PREMIUM;
+    }
+
+    @Override
+    public int maxConcurrentLoans() {
+        return 5;
+    }
+
+    @Override
+    public int loanDays() {
+        return 14;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\strategy\StandardLoanPolicyStrategy.java
+package edu.eci.dosw.DOSW_Library.core.strategy;
+
+import edu.eci.dosw.DOSW_Library.core.model.UserType;
+import org.springframework.stereotype.Component;
+
+@Component
+public class StandardLoanPolicyStrategy implements LoanPolicyStrategy {
+    @Override
+    public UserType supportsUserType() {
+        return UserType.STANDARD;
+    }
+
+    @Override
+    public int maxConcurrentLoans() {
+        return 2;
+    }
+
+    @Override
+    public int loanDays() {
+        return 7;
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\util\DateUtil.java
+package edu.eci.dosw.DOSW_Library.core.util;
+
+import java.time.LocalDate;
+
+public final class DateUtil {
+    private DateUtil() {
+    }
+
+    public static LocalDate today() {
+        return LocalDate.now();
+    }
+
+    public static LocalDate addDays(LocalDate baseDate, int days) {
+        return baseDate.plusDays(days);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\util\IdGeneratorUtil.java
+package edu.eci.dosw.DOSW_Library.core.util;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+public class IdGeneratorUtil {
+    private final AtomicLong sequence;
+
+    public IdGeneratorUtil() {
+        this(1L);
+    }
+
+    public IdGeneratorUtil(Long initialValue) {
+        this.sequence = new AtomicLong(initialValue);
+    }
+
+    public Long nextId() {
+        return sequence.getAndIncrement();
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\util\ValidationUtil.java
+package edu.eci.dosw.DOSW_Library.core.util;
+
+public final class ValidationUtil {
+    private ValidationUtil() {
+    }
+
+    public static void requireNotNull(Object value, String message) {
+        if (value == null) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public static void requireNotBlank(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public static void requirePositive(int value, String message) {
+        if (value <= 0) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    public static void requireZeroOrPositive(int value, String message) {
+        if (value < 0) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\validator\BookValidator.java
+package edu.eci.dosw.DOSW_Library.core.validator;
+
+import edu.eci.dosw.DOSW_Library.core.model.Book;
+import edu.eci.dosw.DOSW_Library.core.util.ValidationUtil;
+
+public final class BookValidator {
+    private BookValidator() {
+    }
+
+    public static void validate(Book book) {
+        ValidationUtil.requireNotNull(book, "Book cannot be null");
+        ValidationUtil.requireNotBlank(book.getTitle(), "Book title is required");
+        ValidationUtil.requireNotBlank(book.getAuthor(), "Book author is required");
+        ValidationUtil.requireNotBlank(book.getIsbn(), "Book ISBN is required");
+        ValidationUtil.requirePositive(book.getTotalStock(), "Total stock must be greater than zero");
+        ValidationUtil.requireZeroOrPositive(book.getAvailableStock(), "Available stock cannot be negative");
+
+        if (book.getAvailableStock() > book.getTotalStock()) {
+            throw new IllegalArgumentException("Available stock cannot exceed total stock");
+        }
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\validator\LoanValidator.java
+package edu.eci.dosw.DOSW_Library.core.validator;
+
+import edu.eci.dosw.DOSW_Library.core.util.ValidationUtil;
+
+public final class LoanValidator {
+    private LoanValidator() {
+    }
+
+    public static void validateForCreate(Long bookId) {
+        ValidationUtil.requireNotNull(bookId, "Loan bookId is required");
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\core\validator\UserValidator.java
+package edu.eci.dosw.DOSW_Library.core.validator;
+
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.core.util.ValidationUtil;
+
+public final class UserValidator {
+    private UserValidator() {
+    }
+
+    public static void validate(User user) {
+        ValidationUtil.requireNotNull(user, "User cannot be null");
+        ValidationUtil.requireNotBlank(user.getName(), "User name is required");
+        ValidationUtil.requireNotBlank(user.getEmail(), "User email is required");
+        ValidationUtil.requireNotBlank(user.getUsername(), "Username is required");
+        ValidationUtil.requireNotBlank(user.getPassword(), "Password is required");
+        ValidationUtil.requireNotNull(user.getRole(), "Role is required");
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\DoswLibraryApplication.java
+package edu.eci.dosw.DOSW_Library;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DoswLibraryApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DoswLibraryApplication.class, args);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\repository\BookRepository.java
+package edu.eci.dosw.DOSW_Library.repository;
+
+import edu.eci.dosw.DOSW_Library.core.model.Book;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface BookRepository extends JpaRepository<Book, Long> {
+    Optional<Book> findByIsbn(String isbn);
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\repository\LoanRepository.java
+package edu.eci.dosw.DOSW_Library.repository;
+
+import edu.eci.dosw.DOSW_Library.core.model.Loan;
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface LoanRepository extends JpaRepository<Loan, Long> {
+    List<Loan> findByUserId(Long userId);
+
+    long countByUserIdAndReturnedFalse(Long userId);
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\repository\UserRepository.java
+package edu.eci.dosw.DOSW_Library.repository;
+
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\security\CustomUserDetailsService.java
+package edu.eci.dosw.DOSW_Library.security;
+
+import edu.eci.dosw.DOSW_Library.repository.UserRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\security\JwtAuthenticationFilter.java
+package edu.eci.dosw.DOSW_Library.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+    private final CustomUserDetailsService customUserDetailsService;
+
+    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService) {
+        this.jwtService = jwtService;
+        this.customUserDetailsService = customUserDetailsService;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String jwt = authHeader.substring(7);
+        String username = jwtService.extractUsername(jwt);
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
+
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\security\JwtService.java
+package edu.eci.dosw.DOSW_Library.security;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+@Service
+public class JwtService {
+
+    private final SecretKey signingKey;
+    private final long expirationMillis;
+
+    public JwtService(
+            @Value("${security.jwt.secret}") String secret,
+            @Value("${security.jwt.expiration-millis}") long expirationMillis
+    ) {
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expirationMillis = expirationMillis;
+    }
+
+    public String generateToken(UserDetails userDetails) {
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + expirationMillis);
+
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String extractUsername(String token) {
+        return extractClaims(token).getSubject();
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractClaims(token).getExpiration().before(new Date());
+    }
+
+    private Claims extractClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\main\java\edu\eci\dosw\DOSW_Library\security\SecurityConfig.java
+package edu.eci.dosw.DOSW_Library.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, CustomUserDetailsService customUserDetailsService) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.customUserDetailsService = customUserDetailsService;
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/books/**").hasAnyRole("USER", "LIBRARIAN")
+                        .requestMatchers("/api/books/**").hasRole("LIBRARIAN")
+                        .requestMatchers("/api/users/**").hasRole("LIBRARIAN")
+                        .requestMatchers("/api/loans/**").hasAnyRole("USER", "LIBRARIAN")
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .build();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\test\java\edu\eci\dosw\DOSW_Library\core\service\LoanServiceTest.java
+package edu.eci.dosw.DOSW_Library.core.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import edu.eci.dosw.DOSW_Library.core.exception.UnauthorizedOperationException;
+import edu.eci.dosw.DOSW_Library.core.model.Book;
+import edu.eci.dosw.DOSW_Library.core.model.Loan;
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.repository.LoanRepository;
+import java.time.LocalDate;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class LoanServiceTest {
+
+    @Mock
+    private LoanRepository loanRepository;
+
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private BookService bookService;
+
+    @InjectMocks
+    private LoanService loanService;
+
+    private User user;
+    private Book book;
+
+    @BeforeEach
+    void setUp() {
+        user = new User(1L, "Laura", "laura@email.com", "laura", "encoded", Role.USER);
+        book = new Book(10L, "Clean Code", "Robert Martin", "ISBN-1", 3, 2);
+    }
+
+    @Test
+    void shouldCreateLoanAndDecrementStock() {
+        when(userService.getUserById(1L)).thenReturn(user);
+        when(bookService.getBookById(10L)).thenReturn(book);
+        when(loanRepository.save(any(Loan.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Loan created = loanService.createLoan(1L, 10L);
+
+        assertEquals(user, created.getUser());
+        assertEquals(book, created.getBook());
+        assertFalse(created.isReturned());
+        verify(bookService).decrementAvailableCopies(10L);
+        verify(loanRepository).save(any(Loan.class));
+    }
+
+    @Test
+    void shouldReturnLoanAndIncrementStock() {
+        Loan loan = new Loan(100L, book, user, LocalDate.now(), null, false);
+        when(loanRepository.findById(100L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(any(Loan.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Loan returned = loanService.returnLoan(100L, 1L, Role.USER);
+
+        assertTrue(returned.isReturned());
+        assertEquals(LocalDate.now(), returned.getReturnDate());
+        verify(bookService).incrementAvailableCopies(10L);
+        verify(loanRepository).save(loan);
+    }
+
+    @Test
+    void shouldDenyReturnWhenUserIsNotOwnerOrLibrarian() {
+        User otherUser = new User(2L, "Ana", "ana@email.com", "ana", "encoded", Role.USER);
+        Loan loan = new Loan(100L, book, otherUser, LocalDate.now(), null, false);
+        when(loanRepository.findById(100L)).thenReturn(Optional.of(loan));
+
+        assertThrows(UnauthorizedOperationException.class, () -> loanService.returnLoan(100L, 1L, Role.USER));
+        verify(bookService, never()).incrementAvailableCopies(any(Long.class));
+        verify(loanRepository, never()).save(any(Loan.class));
+    }
+
+    @Test
+    void librarianCanReturnAnyLoan() {
+        User otherUser = new User(2L, "Ana", "ana@email.com", "ana", "encoded", Role.USER);
+        Loan loan = new Loan(100L, book, otherUser, LocalDate.now(), null, false);
+        when(loanRepository.findById(100L)).thenReturn(Optional.of(loan));
+        when(loanRepository.save(any(Loan.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Loan returned = loanService.returnLoan(100L, 99L, Role.LIBRARIAN);
+
+        assertTrue(returned.isReturned());
+        verify(bookService).incrementAvailableCopies(10L);
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\test\java\edu\eci\dosw\DOSW_Library\core\service\UserServiceTest.java
+package edu.eci.dosw.DOSW_Library.core.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import edu.eci.dosw.DOSW_Library.core.model.Role;
+import edu.eci.dosw.DOSW_Library.core.model.User;
+import edu.eci.dosw.DOSW_Library.repository.UserRepository;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @InjectMocks
+    private UserService userService;
+
+    @Test
+    void shouldCreateAndFindUser() {
+        User user = new User(null, "Ana", "ana@email.com", "ana", "plain", Role.USER);
+
+        when(passwordEncoder.encode("plain")).thenReturn("encoded");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User saved = inv.getArgument(0);
+            saved.setId(1L);
+            return saved;
+        });
+        when(userRepository.findById(1L)).thenReturn(Optional.of(new User(1L, "Ana", "ana@email.com", "ana", "encoded", Role.USER)));
+
+        User created = userService.createUser(user);
+
+        assertNotNull(created.getId());
+        assertEquals("encoded", created.getPassword());
+        assertEquals("Ana", userService.getUserById(created.getId()).getName());
+        verify(userRepository).save(any(User.class));
+    }
+}
+===END===
+===FILE=== C:\Users\uribe\Downloads\ezte si 2\src\test\java\edu\eci\dosw\DOSW_Library\DoswLibraryApplicationTests.java
+package edu.eci.dosw.DOSW_Library;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class DoswLibraryApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+===END===

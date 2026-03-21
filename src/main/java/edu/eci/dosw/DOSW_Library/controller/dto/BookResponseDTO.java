@@ -1,46 +1,12 @@
-package edu.eci.dosw.DOSW_Library.core.model;
+package edu.eci.dosw.DOSW_Library.controller.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "books")
-public class Book {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class BookResponseDTO {
     private Long id;
-
-    @Column(nullable = false)
     private String title;
-
-    @Column(nullable = false)
     private String author;
-
-    @Column(nullable = false, unique = true)
     private String isbn;
-
-    @Column(nullable = false)
     private int totalStock;
-
-    @Column(nullable = false)
     private int availableStock;
-
-    public Book() {
-    }
-
-    public Book(Long id, String title, String author, String isbn, int totalStock, int availableStock) {
-        this.id = id;
-        this.title = title;
-        this.author = author;
-        this.isbn = isbn;
-        this.totalStock = totalStock;
-        this.availableStock = availableStock;
-    }
 
     public Long getId() {
         return id;
@@ -90,3 +56,4 @@ public class Book {
         this.availableStock = availableStock;
     }
 }
+

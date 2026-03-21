@@ -1,19 +1,20 @@
 package edu.eci.dosw.DOSW_Library.controller.mapper;
 
-import edu.eci.dosw.DOSW_Library.controller.dto.UserDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.UserRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.UserResponseDTO;
 import edu.eci.dosw.DOSW_Library.core.model.User;
-import edu.eci.dosw.DOSW_Library.core.model.UserType;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-public final class UserMapper {
-    private UserMapper() {
-    }
+@Mapper(componentModel = "spring")
+public interface UserMapper {
 
-    public static User toModel(UserDTO dto) {
-        UserType type = dto.getUserType() == null ? UserType.STANDARD : UserType.valueOf(dto.getUserType().toUpperCase());
-        return new User(dto.getId(), dto.getName(), dto.getEmail(), type);
-    }
+    @Mapping(target = "id", ignore = true)
+    User toEntity(UserRequestDTO dto);
 
-    public static UserDTO toDto(User user) {
-        return new UserDTO(user.getId(), user.getName(), user.getEmail(), user.getUserType().name());
-    }
+    UserResponseDTO toResponse(User user);
+
+    @Mapping(target = "id", ignore = true)
+    void updateEntity(UserRequestDTO dto, @MappingTarget User user);
 }

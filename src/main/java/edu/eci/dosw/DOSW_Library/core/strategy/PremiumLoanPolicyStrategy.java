@@ -1,13 +1,13 @@
 package edu.eci.dosw.DOSW_Library.core.strategy;
 
-import edu.eci.dosw.DOSW_Library.core.model.UserType;
+import edu.eci.dosw.DOSW_Library.core.model.Role;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PremiumLoanPolicyStrategy implements LoanPolicyStrategy {
     @Override
-    public UserType supportsUserType() {
-        return UserType.PREMIUM;
+    public Role supportsRole() {
+        return Role.LIBRARIAN;
     }
 
     @Override
@@ -20,4 +20,3 @@ public class PremiumLoanPolicyStrategy implements LoanPolicyStrategy {
         return 14;
     }
 }
-

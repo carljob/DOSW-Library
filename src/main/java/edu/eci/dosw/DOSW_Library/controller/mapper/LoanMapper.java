@@ -1,33 +1,16 @@
 package edu.eci.dosw.DOSW_Library.controller.mapper;
 
-import edu.eci.dosw.DOSW_Library.controller.dto.LoanDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.LoanResponseDTO;
 import edu.eci.dosw.DOSW_Library.core.model.Loan;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-public final class LoanMapper {
-    private LoanMapper() {
-    }
+@Mapper(componentModel = "spring")
+public interface LoanMapper {
 
-    public static Loan toModel(LoanDTO dto) {
-        return new Loan(
-                dto.getId(),
-                dto.getUserId(),
-                dto.getBookId(),
-                dto.getLoanDate(),
-                dto.getDueDate(),
-                dto.getReturnedDate(),
-                dto.isReturned()
-        );
-    }
-
-    public static LoanDTO toDto(Loan loan) {
-        return new LoanDTO(
-                loan.getId(),
-                loan.getUserId(),
-                loan.getBookId(),
-                loan.getLoanDate(),
-                loan.getDueDate(),
-                loan.getReturnedDate(),
-                loan.isReturned()
-        );
-    }
+    @Mapping(target = "bookId", source = "book.id")
+    @Mapping(target = "bookTitle", source = "book.title")
+    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "username", source = "user.username")
+    LoanResponseDTO toResponse(Loan loan);
 }

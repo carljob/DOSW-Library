@@ -1,11 +1,14 @@
 package edu.eci.dosw.DOSW_Library.controller;
 
-import edu.eci.dosw.DOSW_Library.controller.dto.BookDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.BookRequestDTO;
+import edu.eci.dosw.DOSW_Library.controller.dto.BookResponseDTO;
 import edu.eci.dosw.DOSW_Library.controller.mapper.BookMapper;
 import edu.eci.dosw.DOSW_Library.core.model.Book;
 import edu.eci.dosw.DOSW_Library.core.service.BookService;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,35 +23,42 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/books")
 public class BookController {
     private final BookService bookService;
+    private final BookMapper bookMapper;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, BookMapper bookMapper) {
         this.bookService = bookService;
+        this.bookMapper = bookMapper;
     }
 
     @GetMapping
-    public List<BookDTO> getAllBooks() {
-        return bookService.getAllBooks().stream().map(BookMapper::toDto).toList();
+    @PreAuthorize("hasAnyRole('USER','LIBRARIAN')")
+    public List<BookResponseDTO> getAllBooks() {
+        return bookService.getAllBooks().stream().map(bookMapper::toResponse).toList();
     }
 
     @GetMapping("/{id}")
-    public BookDTO getBookById(@PathVariable Long id) {
-        return BookMapper.toDto(bookService.getBookById(id));
+    @PreAuthorize("hasAnyRole('USER','LIBRARIAN')")
+    public BookResponseDTO getBookById(@PathVariable Long id) {
+        return bookMapper.toResponse(bookService.getBookById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public BookDTO createBook(@RequestBody BookDTO bookDTO) {
-        Book createdBook = bookService.createBook(BookMapper.toModel(bookDTO));
-        return BookMapper.toDto(createdBook);
+    public BookResponseDTO createBook(@Valid @RequestBody BookRequestDTO request) {
+        Book createdBook = bookService.createBook(bookMapper.toEntity(request));
+        return bookMapper.toResponse(createdBook);
     }
 
     @PutMapping("/{id}")
-    public BookDTO updateBook(@PathVariable Long id, @RequestBody BookDTO bookDTO) {
-        Book updatedBook = bookService.updateBook(id, BookMapper.toModel(bookDTO));
-        return BookMapper.toDto(updatedBook);
+    @PreAuthorize("hasRole('LIBRARIAN')")
+    public BookResponseDTO updateBook(@PathVariable Long id, @Valid @RequestBody BookRequestDTO request) {
+        Book updatedBook = bookService.updateBook(id, bookMapper.toEntity(request));
+        return bookMapper.toResponse(updatedBook);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
