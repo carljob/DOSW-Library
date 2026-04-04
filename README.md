@@ -1,411 +1,183 @@
-# Library Management API
+# DOSW Library - Sistema de Gestión de Biblioteca
 
-API REST para la gestion de biblioteca construida con Spring Boot.
+![Java](https://img.shields.io/badge/Java-17-blue) ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-El proyecto implementa autenticacion JWT, autorizacion por roles, persistencia relacional con JPA/Hibernate, validaciones, mapeo DTO con MapStruct y reglas de negocio para prestamos y control de inventario.
+API REST para la gestión integral de una biblioteca con autenticación JWT, autorización basada en roles, persistencia relacional (PostgreSQL), validaciones rigurosas y reglas de negocio para préstamos.
 
 ---
 
-## 1) Objetivo del sistema
+## Tabla de Contenidos
+1. [Objetivo del Sistema](#objetivo-del-sistema)
+2. [Arquitectura Completa](#arquitectura-completa)
+3. [Modelo Entidad-Relación (ER)](#modelo-entidad-relación)
+4. [Stack Tecnológico](#stack-tecnológico)
+5. [Instrucciones de Ejecución](#instrucciones-de-ejecución)
+6. [Evidencia Funcional](#evidencia-funcional)
+7. [Guía de API](#guía-de-api)
 
-La aplicacion permite administrar el ciclo completo de una biblioteca:
+---
 
-- Gestion de usuarios (alta, consulta, actualizacion y eliminacion)
-- Gestion de libros con control de stock
-- Registro de prestamos
+## Objetivo del Sistema
+
+La aplicación permite administrar el ciclo completo de una biblioteca:
+
+- Gestión de usuarios (alta, consulta, actualización, eliminación)
+- Gestión de libros con control de stock disponible
+- Registro de préstamos con límites por rol
 - Registro de devoluciones
-- Consulta de prestamos por usuario autenticado
-- Seguridad mediante login y token JWT
+- Consulta de préstamos por usuario autenticado
+- Seguridad mediante **login JWT** y **autorización por roles** (LIBRARIAN/USER)
+- Persistencia relacional en **PostgreSQL**
+- Pruebas funcionales automatizadas
 
 ---
 
-## 2) Arquitectura completa
+## Arquitectura Completa
 
-La arquitectura del proyecto esta separada por capas para aislar responsabilidades y facilitar mantenimiento, pruebas y evolucion.
+La arquitectura está separada por capas para aislar responsabilidades:
 
-```text
+```
 src/main/java/edu/eci/dosw/DOSW_Library
 │
-├── DoswLibraryApplication.java
+├── DoswLibraryApplication.java          [Punto de entrada]
 │
-├── controller
-│   ├── AuthController.java
-│   ├── BookController.java
-│   ├── UserController.java
-│   ├── LoanController.java
-│   ├── GlobalExceptionHandler.java
-│   ├── dto
-│   │   ├── AuthRequestDTO.java
-│   │   ├── AuthResponseDTO.java
-│   │   ├── BookRequestDTO.java
-│   │   ├── BookResponseDTO.java
-│   │   ├── UserRequestDTO.java
-│   │   ├── UserResponseDTO.java
-│   │   ├── LoanRequestDTO.java
-│   │   └── LoanResponseDTO.java
-│   └── mapper
-│       ├── BookMapper.java
-│       ├── UserMapper.java
-│       └── LoanMapper.java
+├── controller/                          [Capa REST]
+│   ├── AuthController.java              [Autenticación: /api/auth/login]
+│   ├── BookController.java              [Libros: CRUD]
+│   ├── UserController.java              [Usuarios: CRUD]
+│   ├── LoanController.java              [Préstamos: CRUD + devoluciones]
+│   ├── GlobalExceptionHandler.java      [Manejo centralizado de errores]
+│   ├── dto/                             [DTOs de solicitud/respuesta]
+│   └── mapper/                          [Mapeo Entity ↔ DTO]
 │
-├── core
-│   ├── model
-│   │   ├── Book.java
-│   │   ├── User.java
-│   │   ├── Loan.java
-│   │   └── Role.java
-│   ├── service
-│   │   ├── AuthService.java
-│   │   ├── BookService.java
-│   │   ├── UserService.java
-│   │   └── LoanService.java
-│   ├── strategy
-│   │   ├── LoanPolicyStrategy.java
-│   │   ├── StandardLoanPolicyStrategy.java
-│   │   ├── PremiumLoanPolicyStrategy.java
-│   │   └── LoanPolicyContext.java
-│   ├── validator
-│   │   ├── BookValidator.java
-│   │   ├── UserValidator.java
-│   │   └── LoanValidator.java
-│   ├── util
-│   │   ├── DateUtil.java
-│   │   └── ValidationUtil.java
-│   └── exception
-│       ├── BookNotFoundException.java
-│       ├── BookNotAvailableException.java
-│       ├── UserNotFoundException.java
-│       ├── ResourceNotFoundException.java
-│       ├── UnauthorizedOperationException.java
-│       └── LoanLimitExceededException.java
+├── core/                                [Lógica de Negocio]
+│   ├── model/                           [Modelos de dominio]
+│   ├── service/                         [Servicios]
+│   ├── strategy/                        [Estrategia de Préstamos]
+│   ├── exception/                       [Excepciones Personalizadas]
+│   ├── validator/                       [Validadores]
+│   └── util/                            [Utilidades]
 │
-├── repository
-│   ├── BookRepository.java
-│   ├── UserRepository.java
-│   └── LoanRepository.java
+├── persistence/                         [Capa de Datos]
+│   ├── entity/                          [Entidades JPA]
+│   ├── dao/                             [Data Access Objects]
+│   └── mapper/                          [Entity ↔ Model]
 │
-└── security
+├── repository/                          [Spring Data JPA]
+│
+└── security/                            [Seguridad JWT]
     ├── SecurityConfig.java
     ├── JwtService.java
     ├── JwtAuthenticationFilter.java
     └── CustomUserDetailsService.java
 ```
 
-### Descripcion completa de cada capa
-
-#### `controller`
-Capa de entrada HTTP.
-
-Responsabilidades:
-- Exponer endpoints REST
-- Recibir DTOs de entrada
-- Invocar servicios
-- Devolver DTOs de respuesta
-- Aplicar restricciones por rol con `@PreAuthorize`
-
-Controladores actuales:
-- `AuthController`: registro e inicio de sesion
-- `BookController`: operaciones sobre libros
-- `UserController`: administracion de usuarios
-- `LoanController`: prestamos y devoluciones
-
-#### `controller.dto`
-Contratos de API (entrada/salida), desacoplados de entidades JPA.
-
-Responsabilidades:
-- Definir payloads de request/response
-- Incluir validaciones de Bean Validation en requests
-
-DTOs actuales:
-- Auth: `AuthRequestDTO`, `AuthResponseDTO`
-- Book: `BookRequestDTO`, `BookResponseDTO`
-- User: `UserRequestDTO`, `UserResponseDTO`
-- Loan: `LoanRequestDTO`, `LoanResponseDTO`
-
-#### `controller.mapper`
-Mapeadores con MapStruct entre entidades y DTOs.
-
-Responsabilidades:
-- Conversión `Entity -> ResponseDTO`
-- Conversión `RequestDTO -> Entity`
-- Mantener limpia la capa controller/service
-
-Mappers actuales:
-- `BookMapper`
-- `UserMapper`
-- `LoanMapper`
-
-#### `core.model`
-Modelo de dominio (entidades JPA y enums principales).
-
-Responsabilidades:
-- Representar el estado del negocio
-- Definir relaciones entre entidades
-
-Modelos actuales:
-- `Book`
-- `User`
-- `Loan`
-- `Role` (enum de autorizacion)
-
-#### `core.service`
-Capa de logica de negocio.
-
-Responsabilidades:
-- Aplicar reglas de negocio
-- Coordinar operaciones transaccionales
-- Integrar repositorios, validadores y utilidades
-
-Servicios actuales:
-- `AuthService`
-- `BookService`
-- `UserService`
-- `LoanService`
-
-#### `core.strategy`
-Implementacion del Strategy Pattern para politicas de prestamo.
-
-Responsabilidades:
-- Encapsular politicas por rol
-- Resolver estrategia mediante contexto
-
-Clases actuales:
-- `LoanPolicyStrategy`
-- `StandardLoanPolicyStrategy`
-- `PremiumLoanPolicyStrategy`
-- `LoanPolicyContext`
-
-#### `core.validator`
-Validadores de reglas de datos de entrada/consistencia basica.
-
-Responsabilidades:
-- Validar campos requeridos
-- Validar rangos y consistencia de datos
-
-Validadores actuales:
-- `BookValidator`
-- `UserValidator`
-- `LoanValidator`
-
-#### `core.exception`
-Excepciones de negocio y control de errores del dominio.
-
-Responsabilidades:
-- Representar errores funcionales de forma explicita
-- Permitir respuestas HTTP claras desde el handler global
-
-Excepciones actuales:
-- `BookNotFoundException`
-- `BookNotAvailableException`
-- `UserNotFoundException`
-- `ResourceNotFoundException`
-- `UnauthorizedOperationException`
-- `LoanLimitExceededException`
-
-#### `core.util`
-Utilidades transversales reutilizables.
-
-Responsabilidades:
-- Operaciones auxiliares comunes
-
-Utilidades actuales:
-- `DateUtil`
-- `ValidationUtil`
-
-#### `repository`
-Acceso a datos con Spring Data JPA.
-
-Responsabilidades:
-- Persistencia relacional
-- Consultas por criterio
-
-Repositorios actuales:
-- `BookRepository`
-- `UserRepository`
-- `LoanRepository`
-
-#### `security`
-Capa de seguridad para autenticacion y autorizacion.
-
-Responsabilidades:
-- Generar/validar JWT
-- Cargar usuarios autenticables
-- Filtrar requests con token
-- Definir reglas de acceso
-
-Componentes actuales:
-- `SecurityConfig`
-- `JwtService`
-- `JwtAuthenticationFilter`
-- `CustomUserDetailsService`
-
 ---
 
-## 3) Modelo de datos y reglas de inventario
 
-### `Book`
-- `id`
-- `title`
-- `author`
-- `isbn` (unico)
-- `totalStock`
-- `availableStock`
+## Modelo Entidad-Relación (ER)
+### Diagrama ER/3FN
 
-### `User`
-- `id`
-- `name`
-- `email` (unico)
-- `username` (unico)
-- `password` (encriptado)
-- `role` (`USER`, `LIBRARIAN`)
 
-### `Loan`
-- `id`
-- `book`
-- `user`
-- `loanDate`
-- `returnDate`
-- `returned`
+## Instrucciones de Ejecución
 
-### Reglas de inventario
-- Solo se puede prestar si `availableStock > 0`
-- En prestamo: `availableStock--`
-- En devolucion: `availableStock++`
-- `availableStock` no puede ser mayor que `totalStock`
+### Prerequisitos
 
----
+- **Java 17+** instalado
+- **Docker y Docker Compose** instalados
+- **Maven 3.8+** (incluido en el proyecto con `mvnw`)
 
-## 4) Seguridad (JWT + Roles)
+### Opción A: Ejecución con PostgreSQL (Docker Compose)
 
-### Flujo de autenticacion
-1. Registro: `POST /api/auth/register`
-2. Login: `POST /api/auth/login`
-3. Respuesta login: token JWT
-4. Consumo protegido con header:
-   - `Authorization: Bearer <token>`
+#### Paso 1: Iniciar la base de datos PostgreSQL
 
-### Roles
-- `USER`
-- `LIBRARIAN`
+Verifica que PostgreSQL esté corriendo:
 
-### Restricciones principales
-- `LIBRARIAN`: CRUD de libros, gestion de usuarios, consulta global de prestamos
-- `USER`: consultar libros, crear prestamos, devolver propios prestamos, consultar `my-loans`
-
----
-
-## 5) Endpoints
-
-### Auth
-```http
-POST /api/auth/register
-POST /api/auth/login
-```
-
-### Books
-```http
-GET    /api/books
-GET    /api/books/{id}
-POST   /api/books
-PUT    /api/books/{id}
-DELETE /api/books/{id}
-```
-
-### Users
-```http
-GET    /api/users
-GET    /api/users/{id}
-POST   /api/users
-PUT    /api/users/{id}
-DELETE /api/users/{id}
-```
-
-### Loans
-```http
-GET    /api/loans
-GET    /api/loans/{id}
-GET    /api/loans/my-loans
-POST   /api/loans
-POST   /api/loans/{id}/return
-DELETE /api/loans/{id}
-```
-
----
-
-## 6) Manejo de errores
-
-El proyecto maneja errores de forma centralizada con `GlobalExceptionHandler`.
-
-Formato de error:
-
-```json
-{
-  "timestamp": "2026-03-21T10:30:00",
-  "status": 404,
-  "error": "Not Found",
-  "message": "Resource not found"
-}
-```
-
----
-
-## 7) Tecnologias
-
-- Java 21
-- Spring Boot
-- Spring Web
-- Spring Data JPA
-- Spring Security
-- JWT (`jjwt`)
-- MapStruct
-- Bean Validation (`jakarta.validation`)
-- H2 Database
-- Maven
-- JUnit 5 + Mockito
-
----
-
-## 8) Ejecucion del proyecto
-
-### Compilar
-```bash
-mvn clean install
-```
-
-### Ejecutar
-```bash
-mvn spring-boot:run
-```
-
-Aplicacion:
-
-```text
-http://localhost:8080
-```
-
-Consola H2:
-
-```text
-http://localhost:8080/h2-console
-```
-
----
-
-## 9) Pruebas
+#### Paso 2: Compilar y ejecutar la aplicación
 
 ```bash
-mvn test
+# Windows
+.\mvnw.cmd spring-boot:run
+
+La aplicación se inicializará en `http://localhost:8080`
+
+#### Paso 3: Acceder a Swagger UI
+
+```
+http://localhost:8080/swagger-ui.html
 ```
 
 ---
 
-## 10) Estado actual
+### 2Opión B: Ejecución con Build JAR
 
-El proyecto se encuentra en una arquitectura limpia por capas con:
+```bash
+# Compilar sin pruebas
+.\mvnw.cmd -DskipTests package
 
-- Persistencia relacional
-- Seguridad JWT
-- Autorizacion por roles
-- DTOs y mapeo con MapStruct
-- Validaciones y manejo centralizado de errores
-- Pruebas unitarias
+# Ejecutar JAR
+java -jar target/DOSW-Library-0.0.1-SNAPSHOT.jar
+```
+
+---
+
+### Ejecutar Pruebas
+
+#### Pruebas unitarias (H2 en memoria):
+
+```bash
+.\mvnw.cmd test
+```
+
+#### Pruebas de integración PostgreSQL:
+
+```bash
+# Requiere Docker + Docker Compose activos
+.\mvnw.cmd -Dtest=PostgreSqlBookPersistenceIT test
+```
+
+#### Todas las pruebas:
+
+```bash
+.\mvnw.cmd clean verify
+```
+
+
+## 🔐 Características de Seguridad
+
+### Autenticación JWT
+- Token firmado con HS256
+- Expiración configurable (24 horas por defecto)
+- Secret key parametrizado en `application.yaml`
+
+### Autorización por Roles
+
+| Rol | Permisos |
+|-----|----------|
+| **LIBRARIAN** | Gestionar libros, usuarios; ver todos los préstamos |
+| **USER** | Ver libros; solicitar/devolver préstamos propios |
+
+### Configuración de Seguridad
+- CSRF deshabilitado (API stateless)
+- CORS configurado
+- Sesiones deshabilitadas
+- HTTPS/TLS configurable
+- Validaciones estrictas de entrada
+
+---
+
+## Resultados de Pruebas
+
+```
+Build Status: ÉXITO
+Test Coverage: Todas las capas cubiertas
+Integration Tests: PostgreSQL compatible
+Security Tests: JWT, roles, validaciones
+
+Comando para reproducir:
+.\mvnw.cmd clean verify
+```
+
+
+**Última actualización:** 27 de Marzo de 2026
+

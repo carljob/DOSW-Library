@@ -72,9 +72,26 @@ public class LoanService {
     @Transactional
     public Loan updateLoan(Long id, Loan update) {
         Loan existing = getLoanById(id);
-        if (update.isReturned() && !existing.isReturned()) {
-            return returnLoan(id, update.getUser().getId(), update.getUser().getRole());
+        if (update == null) {
+            throw new IllegalArgumentException("Loan update payload cannot be null");
         }
+
+        if (update.isReturned() && !existing.isReturned()) {
+            existing.setReturned(true);
+            existing.setReturnDate(DateUtil.today());
+            bookService.incrementAvailableCopies(existing.getBook().getId());
+            return loanRepository.save(existing);
+        }
+
+        if (!update.isReturned() && existing.isReturned()) {
+            throw new IllegalStateException("Returned loan cannot be reopened");
+        }
+
+        if (update.getReturnDate() != null) {
+            existing.setReturnDate(update.getReturnDate());
+            return loanRepository.save(existing);
+        }
+
         return existing;
     }
 

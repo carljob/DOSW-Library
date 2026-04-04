@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: DOSW-Library
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/librarydb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-this-secret-in-env-change-this-secret}
+    expiration-millis: ${JWT_EXPIRATION_MILLIS:86400000}
+
+server:
+  ssl:
+    enabled: ${SERVER_SSL_ENABLED:false}
+    key-store: ${SERVER_SSL_KEY_STORE:}
+    key-store-password: ${SERVER_SSL_KEY_STORE_PASSWORD:}
+    key-store-type: ${SERVER_SSL_KEY_STORE_TYPE:PKCS12}
+    key-alias: ${SERVER_SSL_KEY_ALIAS:tomcat}
+    key-password: ${SERVER_SSL_KEY_PASSWORD:}
+
+loan:
+  policy:
+    user:
+      max-concurrent: ${LOAN_USER_MAX_CONCURRENT:2}
+      days: ${LOAN_USER_DAYS:7}
+    librarian:
+      max-concurrent: ${LOAN_LIBRARIAN_MAX_CONCURRENT:5}
+      days: ${LOAN_LIBRARIAN_DAYS:14}
+

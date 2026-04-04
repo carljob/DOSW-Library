@@ -1,5 +1,8 @@
 package edu.eci.dosw.DOSW_Library.core.util;
 
+/**
+ * Utilidad con validaciones básicas para argumentos de entrada.
+ */
 public final class ValidationUtil {
     private ValidationUtil() {
     }
