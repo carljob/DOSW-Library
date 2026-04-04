@@ -1,30 +1,34 @@
-package edu.eci.dosw.DOSW_Library.core.model;
+package edu.eci.dosw.DOSW_Library.persistence.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 
-public class Loan {
+@Entity
+@Table(name = "loans")
+public class LoanEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Book book;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "book_id")
+    private BookEntity book;
 
-    private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
     private LocalDate loanDate;
     private LocalDate returnDate;
     private boolean returned;
-
-    public Loan() {
-    }
-
-    public Loan(Long id, Book book, User user, LocalDate loanDate, LocalDate returnDate, boolean returned) {
-        this.id = id;
-        this.book = book;
-        this.user = user;
-        this.loanDate = loanDate;
-        this.returnDate = returnDate;
-        this.returned = returned;
-    }
 
     public Long getId() {
         return id;
@@ -34,19 +38,19 @@ public class Loan {
         this.id = id;
     }
 
-    public Book getBook() {
+    public BookEntity getBook() {
         return book;
     }
 
-    public void setBook(Book book) {
+    public void setBook(BookEntity book) {
         this.book = book;
     }
 
-    public User getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserEntity user) {
         this.user = user;
     }
 
@@ -74,3 +78,4 @@ public class Loan {
         this.returned = returned;
     }
 }
+
