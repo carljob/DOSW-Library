@@ -1,4 +1,4 @@
-package edu.eci.dosw.DOSW_Library.persistence.entity;
+package edu.eci.dosw.DOSW_Library.persistence.relational.entity;
 
 import edu.eci.dosw.DOSW_Library.core.model.Role;
 import jakarta.persistence.Column;

@@ -1,5 +1,6 @@
 package edu.eci.dosw.DOSW_Library.core.model;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,6 +21,10 @@ public class User implements UserDetails {
 
     private Role role;
 
+    private String membershipType;
+
+    private LocalDate addedDate;
+
     public User() {
     }
 
@@ -30,6 +35,18 @@ public class User implements UserDetails {
         this.username = username;
         this.password = password;
         this.role = role;
+    }
+
+    public User(Long id, String name, String email, String username, String password, Role role,
+                String membershipType, LocalDate addedDate) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.membershipType = membershipType;
+        this.addedDate = addedDate;
     }
 
     public Long getId() {
@@ -80,6 +97,22 @@ public class User implements UserDetails {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getMembershipType() {
+        return membershipType;
+    }
+
+    public void setMembershipType(String membershipType) {
+        this.membershipType = membershipType;
+    }
+
+    public LocalDate getAddedDate() {
+        return addedDate;
+    }
+
+    public void setAddedDate(LocalDate addedDate) {
+        this.addedDate = addedDate;
     }
 
     @Override

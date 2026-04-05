@@ -13,6 +13,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb+srv://admin:AdminMongo@cluster0.arq8ibw.mongodb.net/librarydb?appName=Cluster0}
+      database: librarydb
+  profiles:
+    active: mongo
 
 security:
   jwt:
@@ -36,4 +42,3 @@ loan:
     librarian:
       max-concurrent: ${LOAN_LIBRARIAN_MAX_CONCURRENT:5}
       days: ${LOAN_LIBRARIAN_DAYS:14}
-

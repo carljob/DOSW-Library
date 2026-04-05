@@ -1,7 +1,7 @@
-package edu.eci.dosw.DOSW_Library.persistence.mapper;
+package edu.eci.dosw.DOSW_Library.persistence.relational.mapper;
 
 import edu.eci.dosw.DOSW_Library.core.model.Book;
-import edu.eci.dosw.DOSW_Library.persistence.entity.BookEntity;
+import edu.eci.dosw.DOSW_Library.persistence.relational.entity.BookEntity;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,4 +35,5 @@ public class BookPersistenceMapper {
         return entity;
     }
 }
+
 

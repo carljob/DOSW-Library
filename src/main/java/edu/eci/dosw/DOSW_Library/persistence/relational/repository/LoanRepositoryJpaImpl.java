@@ -1,25 +1,27 @@
-package edu.eci.dosw.DOSW_Library.persistence.repository;
+package edu.eci.dosw.DOSW_Library.persistence.relational.repository;
 
 import edu.eci.dosw.DOSW_Library.core.model.Loan;
-import edu.eci.dosw.DOSW_Library.persistence.dao.JpaBookDao;
-import edu.eci.dosw.DOSW_Library.persistence.dao.JpaLoanDao;
-import edu.eci.dosw.DOSW_Library.persistence.dao.JpaUserDao;
-import edu.eci.dosw.DOSW_Library.persistence.entity.LoanEntity;
-import edu.eci.dosw.DOSW_Library.persistence.mapper.LoanPersistenceMapper;
+import edu.eci.dosw.DOSW_Library.persistence.relational.dao.JpaBookDao;
+import edu.eci.dosw.DOSW_Library.persistence.relational.dao.JpaLoanDao;
+import edu.eci.dosw.DOSW_Library.persistence.relational.dao.JpaUserDao;
+import edu.eci.dosw.DOSW_Library.persistence.relational.entity.LoanEntity;
+import edu.eci.dosw.DOSW_Library.persistence.relational.mapper.LoanPersistenceMapper;
 import edu.eci.dosw.DOSW_Library.repository.LoanRepository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class LoanRepositoryImpl implements LoanRepository {
+@Profile("relational")
+public class LoanRepositoryJpaImpl implements LoanRepository {
 
     private final JpaLoanDao jpaLoanDao;
     private final JpaBookDao jpaBookDao;
     private final JpaUserDao jpaUserDao;
     private final LoanPersistenceMapper mapper;
 
-    public LoanRepositoryImpl(
+    public LoanRepositoryJpaImpl(
             JpaLoanDao jpaLoanDao,
             JpaBookDao jpaBookDao,
             JpaUserDao jpaUserDao,
@@ -76,4 +78,5 @@ public class LoanRepositoryImpl implements LoanRepository {
         return jpaLoanDao.countByUserIdAndReturnedFalse(userId);
     }
 }
+
 

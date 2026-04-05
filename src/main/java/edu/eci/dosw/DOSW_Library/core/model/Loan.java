@@ -1,6 +1,8 @@
 package edu.eci.dosw.DOSW_Library.core.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Loan {
 
@@ -14,7 +16,10 @@ public class Loan {
     private LocalDate returnDate;
     private boolean returned;
 
+    private List<LoanHistoryEntry> history;
+
     public Loan() {
+        this.history = new ArrayList<>();
     }
 
     public Loan(Long id, Book book, User user, LocalDate loanDate, LocalDate returnDate, boolean returned) {
@@ -24,6 +29,18 @@ public class Loan {
         this.loanDate = loanDate;
         this.returnDate = returnDate;
         this.returned = returned;
+        this.history = new ArrayList<>();
+    }
+
+    public Loan(Long id, Book book, User user, LocalDate loanDate, LocalDate returnDate, boolean returned,
+                List<LoanHistoryEntry> history) {
+        this.id = id;
+        this.book = book;
+        this.user = user;
+        this.loanDate = loanDate;
+        this.returnDate = returnDate;
+        this.returned = returned;
+        this.history = history;
     }
 
     public Long getId() {
@@ -72,5 +89,13 @@ public class Loan {
 
     public void setReturned(boolean returned) {
         this.returned = returned;
+    }
+
+    public List<LoanHistoryEntry> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<LoanHistoryEntry> history) {
+        this.history = history;
     }
 }

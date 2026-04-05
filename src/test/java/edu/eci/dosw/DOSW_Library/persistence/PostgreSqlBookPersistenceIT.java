@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import edu.eci.dosw.DOSW_Library.core.model.Book;
 import edu.eci.dosw.DOSW_Library.core.service.BookService;
-import edu.eci.dosw.DOSW_Library.persistence.dao.JpaBookDao;
+import edu.eci.dosw.DOSW_Library.persistence.relational.dao.JpaBookDao;
 import edu.eci.dosw.DOSW_Library.repository.BookRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -19,6 +20,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
+@ActiveProfiles("relational")
 @Testcontainers(disabledWithoutDocker = true)
 class PostgreSqlBookPersistenceIT {
 
@@ -70,4 +72,3 @@ class PostgreSqlBookPersistenceIT {
         assertEquals(8, persistedAfterUpdate.getAvailableStock());
     }
 }
-

@@ -1,20 +1,22 @@
-package edu.eci.dosw.DOSW_Library.persistence.repository;
+package edu.eci.dosw.DOSW_Library.persistence.relational.repository;
 
 import edu.eci.dosw.DOSW_Library.core.model.User;
-import edu.eci.dosw.DOSW_Library.persistence.dao.JpaUserDao;
-import edu.eci.dosw.DOSW_Library.persistence.mapper.UserPersistenceMapper;
+import edu.eci.dosw.DOSW_Library.persistence.relational.dao.JpaUserDao;
+import edu.eci.dosw.DOSW_Library.persistence.relational.mapper.UserPersistenceMapper;
 import edu.eci.dosw.DOSW_Library.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class UserRepositoryImpl implements UserRepository {
+@Profile("relational")
+public class UserRepositoryJpaImpl implements UserRepository {
 
     private final JpaUserDao jpaUserDao;
     private final UserPersistenceMapper mapper;
 
-    public UserRepositoryImpl(JpaUserDao jpaUserDao, UserPersistenceMapper mapper) {
+    public UserRepositoryJpaImpl(JpaUserDao jpaUserDao, UserPersistenceMapper mapper) {
         this.jpaUserDao = jpaUserDao;
         this.mapper = mapper;
     }
@@ -54,4 +56,5 @@ public class UserRepositoryImpl implements UserRepository {
         return jpaUserDao.existsByEmail(email);
     }
 }
+
 

@@ -1,20 +1,22 @@
-package edu.eci.dosw.DOSW_Library.persistence.repository;
+package edu.eci.dosw.DOSW_Library.persistence.relational.repository;
 
 import edu.eci.dosw.DOSW_Library.core.model.Book;
-import edu.eci.dosw.DOSW_Library.persistence.dao.JpaBookDao;
-import edu.eci.dosw.DOSW_Library.persistence.mapper.BookPersistenceMapper;
+import edu.eci.dosw.DOSW_Library.persistence.relational.dao.JpaBookDao;
+import edu.eci.dosw.DOSW_Library.persistence.relational.mapper.BookPersistenceMapper;
 import edu.eci.dosw.DOSW_Library.repository.BookRepository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class BookRepositoryImpl implements BookRepository {
+@Profile("relational")
+public class BookRepositoryJpaImpl implements BookRepository {
 
     private final JpaBookDao jpaBookDao;
     private final BookPersistenceMapper mapper;
 
-    public BookRepositoryImpl(JpaBookDao jpaBookDao, BookPersistenceMapper mapper) {
+    public BookRepositoryJpaImpl(JpaBookDao jpaBookDao, BookPersistenceMapper mapper) {
         this.jpaBookDao = jpaBookDao;
         this.mapper = mapper;
     }
@@ -44,4 +46,5 @@ public class BookRepositoryImpl implements BookRepository {
         return jpaBookDao.findByIsbn(isbn).map(mapper::toDomain);
     }
 }
+
 
