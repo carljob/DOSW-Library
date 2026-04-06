@@ -8,23 +8,21 @@ import org.springframework.stereotype.Component;
 public class UserPersistenceMapper {
 
     public User toDomain(UserEntity entity) {
-        if (entity == null) {
-            return null;
-        }
+        if (entity == null) return null;
         return new User(
                 entity.getId(),
                 entity.getName(),
                 entity.getEmail(),
                 entity.getUsername(),
                 entity.getPassword(),
-                entity.getRole()
+                entity.getRole(),
+                entity.getMembershipType(),
+                entity.getAddedDate()
         );
     }
 
     public UserEntity toEntity(User domain) {
-        if (domain == null) {
-            return null;
-        }
+        if (domain == null) return null;
         UserEntity entity = new UserEntity();
         entity.setId(domain.getId());
         entity.setName(domain.getName());
@@ -32,8 +30,8 @@ public class UserPersistenceMapper {
         entity.setUsername(domain.getUsername());
         entity.setPassword(domain.getPassword());
         entity.setRole(domain.getRole());
+        entity.setMembershipType(domain.getMembershipType());
+        entity.setAddedDate(domain.getAddedDate());
         return entity;
     }
 }
-
-
