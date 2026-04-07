@@ -1,19 +1,6 @@
 spring:
   application:
     name: DOSW-Library
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/librarydb}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb+srv://admin:AdminMongo@cluster0.arq8ibw.mongodb.net/librarydb?appName=Cluster0}
@@ -27,6 +14,7 @@ security:
     expiration-millis: ${JWT_EXPIRATION_MILLIS:86400000}
 
 server:
+  port: ${SERVER_PORT:8080}
   ssl:
     enabled: ${SERVER_SSL_ENABLED:false}
     key-store: ${SERVER_SSL_KEY_STORE:}
