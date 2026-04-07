@@ -8,11 +8,12 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     mongodb:
       uri: ${SPRING_DATA_MONGODB_URI:mongodb+srv://admin:AdminMongo@cluster0.arq8ibw.mongodb.net/librarydb?appName=Cluster0}
