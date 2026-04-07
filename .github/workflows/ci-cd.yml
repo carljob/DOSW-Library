@@ -1,0 +1,102 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      - name: Compile
+        run: mvn compile -DskipTests --no-transfer-progress
+
+      - name: Upload compiled classes
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-classes
+          path: target/
+
+  test:
+    name: test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      - name: Download compiled classes
+        uses: actions/download-artifact@v3
+        with:
+          name: compiled-classes
+          path: target/
+
+      - name: Run tests
+        run: mvn verify -Dtest="LoanServiceTest,LoanServiceReto6Test,UserServiceTest,BookMongoPersistenceTest,BookJpaPersistenceTest" -DfailIfNoTests=false --no-transfer-progress
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: target/surefire-reports/
+
+  analysis:
+    name: analysis
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      - name: Validate and compile
+        run: mvn validate compile -DskipTests --no-transfer-progress
+
+      - name: Print warnings
+        run: mvn validate compile -DskipTests --no-transfer-progress 2>&1 | grep -i "warning" || echo "No warnings found"
+
+  deploy:
+    name: deploy
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+          cache: maven
+
+      - name: Deploy
+        run: echo "En construcción ..."
+
